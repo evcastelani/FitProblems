@@ -55,7 +55,7 @@ end
 function solve(prob::FitProbType,θinit::Vector{Float64},method::String)
 
     m = prob.npts
-    p = prob.nout
+    p = m-prob.nout
     A = prob.data
     model = prob.model
     dim = prob.dim
@@ -69,7 +69,7 @@ function solve(prob::FitProbType,θinit::Vector{Float64},method::String)
     end
 
     sortF(V::Vector{Float64}) = begin
-        for i = 1:p
+        for i = 1:p+1
             for j = i + 1:m
                 if V[i] > V[j]          
                     vaux = V[j]
@@ -105,8 +105,74 @@ function solve(prob::FitProbType,θinit::Vector{Float64},method::String)
 
 end
 
-function build_problem()
+function build_problem(probtype::String,limit::Vector{Float64},params::Vector{Float64})
+    if probtype == "parabola"
+        println("a limit vector is need to discretize the interval, for example, [-10.0,10.0]")
+        println("params need to be setup as [a,b,c,npts,nout]")
+        npts = Int(params[4])
+        nout = Int(params[5])
+        r = (limit[2]-limit[1])/(npts-1)
+        x = [limit[1]:r:limit[2];]
+        y = params[1]*x.^2 .+params[2]*x .+params[3]
+        nout = Int(params[5])
+        k = 1
+        iout = []
+        while k<=nout
+            i = rand([1:npts;])
+            if i ∉ iout
+                push!(iout,i)
+                k = k+1
+            end
+        end
+        
+        for k = 1:nout
+            x[iout[k]]=x[iout[k]]+randn()
+            y[iout[k]]=y[iout[k]]+randn()
+        end
 
+        
+        FileMatrix = ["name :" "Parabola";"data :" [[x y]]; "npts :" npts;"nout :" nout; "model :" "(x,t) -> t[1]*x[1]^2 +t[2]*x[1] + t[3]";"dim :" 3; "cluster :" "false"; "noise :" "false"; "solution :" [params[1:3]]; "description :" "none"]
+        
+        open("parabola_$(params[1])_$(params[2])_$(params[3])_$(nout).csv", "w") do io
+           writedlm(io, FileMatrix)
+        end
+    end
+    if probtype == "sphere2D"
+        println("params need to be setup as [center,radious,npts,nout]")
+        c = [params[1],params[2]]
+        r = params[3]
+        npts = Int(params[4])
+        x = zeros(npts)
+        y = zeros(npts)
+        θ = [0.0:2*π/(npts-1):2*π;]
+        for k=1:npts
+            x[k] = c[1]+r*cos(θ[k])
+            y[k] = c[2]+r*sin(θ[k])
+        end
+        nout = Int(params[5])
+        k = 1
+        iout = []
+        while k<=nout
+            i = rand([1:npts;])
+            if i ∉ iout
+                push!(iout,i)
+                k = k+1
+            end
+        end
+        for k = 1:nout
+            x[iout[k]]=x[iout[k]]+rand([0.25*r:0.1*(r);(1+0.25)*r])
+            y[iout[k]]=y[iout[k]]+rand([0.25*r:0.1*(r);(1+0.25)*r])
+        end
+        FileMatrix = ["name :" "sphere2D";"data :" [[x y]]; "npts :" npts;"nout :" nout; "model :" "(x,t) -> (x[1]-t[1])^2 - (x[2]-t[2])^2 - t[3]^2";"dim :" 3; "cluster :" "false"; "noise :" "false"; "solution :" [push!(c,r)]; "description :" "none"]
+        
+        open("sphere2D_$(c[1])_$(c[2])_$(c[3])_$(nout).csv", "w") do io
+           writedlm(io, FileMatrix)
+        end
+
+    end
+    if probtype == "sphere3D"
+    
+    end
 end
 
 function show(io::IO, fout::FitOutputType)
