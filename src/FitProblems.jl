@@ -96,6 +96,10 @@ function solve(prob::FitProbType,θinit::Vector{Float64},method::String)
        res = Optim.optimize(lovo,θinit , ParticleSwarm())
        return FitOutputType(Optim.converged(res),Optim.minimizer(res),Optim.iterations(res),Optim.minimum(res),Optim.f_calls(res))
     end
+    if method == "LMlovo"
+        res = RAFF.lmlovo(model, θinit, A, dim,p)
+        return FitOutputType(res.status,res.solution,res.iter,res.f,res.nf)
+    end
 
     if method == "RAFF"
         res = RAFF.raff(model, A, dim;initguess = θinit)
