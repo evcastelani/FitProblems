@@ -3,7 +3,7 @@ using LinearAlgebra, BenchmarkTools
 using CSV
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 1000
 #function build_results(filename::String,method::String)
-filename = "list.txt"
+filename = "list_trig.txt"
 methods = ["LMlovo","NelderMead","SimulatedAnnealing","ParticleSwarm","RAFF"]
 list = String.(readdlm(filename))
 io = open("log_read_erros.txt", "w");
@@ -15,10 +15,10 @@ for methodname in methods
     for file in list
         local prob = load_problem(file)
         println(" 🏁 Testing problem $(file) using $(methodname)")
-        try  s = solve(prob,zeros(prob.dim),methodname)
+        try  s = solve(prob,[1.0:1:prob.dim;],methodname)
             println(" 🏆 Problem free from read errors!")
             println(" 🕥 Performing benchmark! Please wait!")
-            local b = @benchmark solve($(prob),zeros($(prob.dim)),$(methodname))
+            local b = @benchmark solve($(prob),[1.0:1:$(prob.dim);],$(methodname))
             display(b)
             push!(df,[file,prob.dim,prob.npts,prob.nout,norm(prob.solution-s.solution,Inf),s.minimum,s.feval,s.niter,s.status,c*minimum(b.times),c*maximum(b.times),c*mean(b.times),c*median(b.times),b.memory,b.allocs])
         catch
@@ -26,7 +26,7 @@ for methodname in methods
             write(io," Error reading $(file) using $(methodname) occurred \n")
         end
     end
-    CSV.write("$(methodname)Output.csv", df)
+    CSV.write("$(methodname)Output_trig.csv", df)
 end
 close(io)
 #end

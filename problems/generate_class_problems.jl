@@ -36,22 +36,35 @@ function generate!(probtype,nprob)
     end
     if probtype == "log"
         for i=1:nprob
-            l = rand([1.0:4.0;])
-            a = rand([-10.0:0.5:10.0;])
-            b = rand([-10.0:0.5:10.0;])
-            c = rand([-10.0:0.5:10.0;])
+            l = rand([2.0:5.0;])
+            a = rand([1.0:0.5:10.0;])
+            b = rand([1.0:0.5:10.0;])
+            c = rand([1.0:0.5:10.0;])
             npts = rand([100:50:1000;])
             nout = round(Int,((rand([5:1:25;]))/100.0)*npts)
-            build_problem("log",[-l,l],[a,b,c,npts,nout])
+            build_problem("log",[1,l],[a,b,c,npts,nout])
+        end
+    end
+     if probtype == "trig"
+        for i=1:nprob
+            l = rand([2.0:5.0;])
+            a = rand([1.0:0.5:10.0;])
+            b = rand([1.0:0.5:10.0;])
+            c = rand([1.0:0.5:10.0;])
+            npts = rand([100:50:1000;])
+            nout = round(Int,((rand([5:1:25;]))/100.0)*npts)
+            build_problem("trig",[1,l],[a,b,c,npts,nout])
         end
     end
     
 
+
+
 end
 
 generate_all() = begin
-    generate!("parabola",250)
-    generate!("gaussian",250)
-    generate!("cubic",250)
-    generate!("log",250)
+    #generate!("parabola",250)
+    #generate!("gaussian",250)
+    #generate!("cubic",250)
+    generate!("trig",250)
 end

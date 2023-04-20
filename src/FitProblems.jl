@@ -276,7 +276,7 @@ function build_problem(probtype::String,limit::Vector{Float64},params::Vector{Fl
         nout = Int(params[5])
         r = (limit[2]-limit[1])/(npts-1)
         x = [limit[1]:r:limit[2];]
-        y = params[1]*log.((params[2]*x .+params[3]).^2)
+        y = params[1]*log.((params[2]*x .+params[3]))
         nout = Int(params[5])
         k = 1
         iout = []
@@ -294,9 +294,41 @@ function build_problem(probtype::String,limit::Vector{Float64},params::Vector{Fl
         end
 
 
-        FileMatrix = ["name :" "log";"data :" [[x y]]; "npts :" npts;"nout :" nout; "model :" "(x,t) -> t[1]*log((t[2]*x[1] +t[3])^2)";"dim :" 3; "cluster :" "false"; "noise :" "false"; "solution :" [params[1:3]]; "description :" "none"]
+        FileMatrix = ["name :" "log";"data :" [[x y]]; "npts :" npts;"nout :" nout; "model :" "(x,t) -> t[1]*log((t[2]*x[1] +t[3]))";"dim :" 3; "cluster :" "false"; "noise :" "false"; "solution :" [params[1:3]]; "description :" "none"]
 
-        open("log_$(params[1])_$(params[2])_$(params[3])_$(npts)_$(nout).csv", "w") do io
+        open("log2_$(params[1])_$(params[2])_$(params[3])_$(npts)_$(nout).csv", "w") do io
+            writedlm(io, FileMatrix)
+        end
+    end
+
+    if probtype == "trig"
+        println("a limit vector is need to discretize the interval, for example, [-10.0,10.0]")
+        println("params need to be setup as [a,b,c,npts,nout]")
+        npts = Int(params[4])
+        nout = Int(params[5])
+        r = (limit[2]-limit[1])/(npts-1)
+        x = [limit[1]:r:limit[2];]
+        y = params[1]*sin.(params[2]*x) .+ params[3]
+        nout = Int(params[5])
+        k = 1
+        iout = []
+        while k<=nout
+            i = rand([1:npts;])
+            if i ∉ iout
+                push!(iout,i)
+                k = k+1
+            end
+        end
+
+        for k = 1:nout
+            x[iout[k]]=x[iout[k]]+randn()
+            y[iout[k]]=y[iout[k]]+randn()
+        end
+
+
+        FileMatrix = ["name :" "trig";"data :" [[x y]]; "npts :" npts;"nout :" nout; "model :" "(x,t) -> t[1]*sin(t[2]*x[1]) +t[3]";"dim :" 3; "cluster :" "false"; "noise :" "false"; "solution :" [params[1:3]]; "description :" "none"]
+
+        open("trig_$(params[1])_$(params[2])_$(params[3])_$(npts)_$(nout).csv", "w") do io
             writedlm(io, FileMatrix)
         end
     end
